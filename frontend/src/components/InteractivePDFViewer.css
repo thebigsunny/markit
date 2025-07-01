@@ -1,0 +1,450 @@
+.interactive-pdf-viewer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 0;
+  background-color: #f5f5f5;
+  overflow-y: auto; /* Ensure scrolling is enabled */
+  scroll-behavior: smooth; /* Smooth scrolling */
+}
+
+.control-panel {
+  background: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 90%;
+  max-width: 800px;
+}
+
+.element-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.element-filter label {
+  font-weight: 500;
+  color: #333;
+}
+
+.element-filter select {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  font-size: 0.9rem;
+  min-width: 200px;
+}
+
+.selection-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #e8f4fd;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #007bff;
+}
+
+.selection-info span {
+  color: #007bff;
+  font-weight: 500;
+}
+
+.selection-info button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background-color 0.2s;
+}
+
+.selection-info button:hover {
+  background: #0056b3;
+}
+
+.multi-select-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #fff3cd;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #ff8c00;
+  flex-wrap: wrap;
+}
+
+.multi-select-info span:first-child {
+  color: #856404;
+  font-weight: 500;
+}
+
+.multi-select-info span:not(:first-child) {
+  color: #ff8c00;
+  font-weight: 500;
+}
+
+.multi-select-info button {
+  background: #ff8c00;
+  color: white;
+  border: none;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background-color 0.2s;
+  margin-left: 0.5rem;
+}
+
+.multi-select-info button:hover {
+  background: #e67e00;
+}
+
+.multi-select-info button:first-of-type {
+  background: #28a745;
+}
+
+.multi-select-info button:first-of-type:hover {
+  background: #218838;
+}
+
+.interactive-page-container {
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: white;
+  border-radius: 8px;
+  overflow: visible; /* Changed from hidden to allow scrolling */
+  position: relative;
+  scroll-behavior: inherit; /* Inherit smooth scrolling */
+}
+
+.page-indicator {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  z-index: 5;
+}
+
+.pdf-canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.pdf-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.elements-overlay {
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Allow scrolling through overlay */
+  overflow: visible; /* Don't clip content */
+}
+
+.interactive-element {
+  pointer-events: all;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.interactive-element:hover {
+  transform: scale(1.01);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+/* Element type specific styles */
+.interactive-element.text {
+  /* Text elements */
+}
+
+.interactive-element.text.heading {
+  border-left: 3px solid #007bff;
+}
+
+.interactive-element.text.subheading {
+  border-left: 2px solid #6c757d;
+}
+
+.interactive-element.text.list-item:before {
+  content: '•';
+  position: absolute;
+  left: -10px;
+  color: #007bff;
+  font-weight: bold;
+}
+
+.interactive-element.annotation {
+  border: 2px solid rgba(255, 165, 0, 0.5);
+}
+
+.interactive-element.annotation:hover {
+  background-color: rgba(255, 165, 0, 0.2) !important;
+  border: 2px solid #ff8c00 !important;
+}
+
+.interactive-element.image {
+  border: 2px solid rgba(255, 0, 255, 0.5);
+}
+
+.interactive-element.image:hover {
+  background-color: rgba(255, 0, 255, 0.2) !important;
+  border: 2px solid #ff00ff !important;
+}
+
+.interactive-element.form-field {
+  border: 2px solid rgba(0, 255, 0, 0.5);
+}
+
+.interactive-element.form-field:hover {
+  background-color: rgba(0, 255, 0, 0.2) !important;
+  border: 2px solid #00ff00 !important;
+}
+
+/* Selection state */
+.interactive-element.selected {
+  background-color: rgba(0, 255, 0, 0.2) !important;
+  border: 2px solid #00ff00 !important;
+  animation: selectedPulse 2s infinite;
+}
+
+@keyframes selectedPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(0, 255, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 0, 0);
+  }
+}
+
+/* Multi-selection state */
+.interactive-element.multi-selected {
+  background-color: rgba(255, 165, 0, 0.3) !important;
+  border: 2px solid #ff8c00 !important;
+  animation: multiSelectedPulse 2s infinite;
+}
+
+@keyframes multiSelectedPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 140, 0, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(255, 140, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 140, 0, 0);
+  }
+}
+
+/* Enhanced tooltip */
+.element-tooltip {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  max-width: 350px;
+  word-wrap: break-word;
+  z-index: 1000;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  animation: fadeIn 0.3s ease;
+}
+
+.element-tooltip.enhanced {
+  padding: 0;
+  background: white;
+  color: #333;
+  border: 1px solid #ddd;
+  min-width: 250px;
+}
+
+.tooltip-header {
+  background: #007bff;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px 8px 0 0;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tooltip-header .subtype {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  font-weight: normal;
+}
+
+.tooltip-content {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.tooltip-metadata {
+  padding: 6px 12px;
+  background: #f8f9fa;
+  border-radius: 0 0 8px 8px;
+  text-align: center;
+}
+
+.tooltip-metadata small {
+  color: #6c757d;
+  font-style: italic;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Interactive element types styling */
+.interactive-element.hovered {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .interactive-pdf-viewer {
+    padding: 1rem;
+  }
+  
+  .control-panel {
+    width: 95%;
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .element-filter {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .element-filter select {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .interactive-page-container {
+    margin-bottom: 1rem;
+  }
+  
+  .element-tooltip {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    transform: none;
+    max-width: none;
+  }
+  
+  .element-tooltip.enhanced {
+    min-width: auto;
+  }
+  
+  .page-indicator {
+    position: static;
+    margin: 0.5rem;
+    display: inline-block;
+  }
+}
+
+/* Accessibility improvements */
+.interactive-element:focus {
+  outline: 3px solid #007bff;
+  outline-offset: 2px;
+}
+
+.interactive-element:active {
+  transform: scale(0.98);
+}
+
+/* Loading animation */
+.pdf-loading::after {
+  content: '';
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+  border: 2px solid #007bff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Element count indicators */
+.element-filter option {
+  padding: 0.5rem;
+}
+
+/* Hover states for different element subtypes */
+.interactive-element.heading:hover {
+  background-color: rgba(0, 123, 255, 0.15) !important;
+  border-left: 4px solid #007bff !important;
+}
+
+.interactive-element.subheading:hover {
+  background-color: rgba(108, 117, 125, 0.15) !important;
+  border-left: 3px solid #6c757d !important;
+}
+
+.interactive-element.list-item:hover {
+  background-color: rgba(40, 167, 69, 0.15) !important;
+  border-left: 3px solid #28a745 !important;
+}
+
+.interactive-element.title:hover {
+  background-color: rgba(220, 53, 69, 0.15) !important;
+  border: 2px solid #dc3545 !important;
+} 
