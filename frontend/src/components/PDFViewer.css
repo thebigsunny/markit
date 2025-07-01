@@ -1,0 +1,10 @@
+.pdf-viewer-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.page-container {
+  margin-bottom: 1rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}

@@ -1,3 +1,51 @@
+/* General App Styles */
+#root {
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-size: 1.5rem;
+  font-family: 'Inter', sans-serif;
+  background-color: #f8f9fa;
+}
+
+/* Dashboard Styles for Logged-in Users */
+.dashboard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #f8f9fa;
+  color: #333;
+}
+
+.dashboard-container {
+  max-width: 600px;
+  padding: 3rem;
+  text-align: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-container h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.dashboard-button-container {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
 .App {
   text-align: center;
   min-height: 100vh;
@@ -33,3 +81,19 @@ code {
   border-radius: 4px;
   font-family: 'Courier New', monospace;
 } 
+
+.auth-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 1rem;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.auth-button:hover {
+  background-color: #0056b3;
+}

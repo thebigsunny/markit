@@ -1,0 +1,69 @@
+.viewer-page {
+  background-color: #f0f4f8;
+  min-height: 100vh;
+}
+
+.viewer-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: #fff;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  justify-content: space-between;
+}
+
+.viewer-header a {
+  text-decoration: none;
+  color: #81a6e3;
+  font-weight: 500;
+}
+
+.viewer-header h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  flex-grow: 1;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.zoom-controls button {
+  background-color: transparent;
+  color: #81a6e3;
+  border: 1px solid #81a6e3;
+  padding: 0.3rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease-in-out;
+}
+
+.zoom-controls button:hover:not(:disabled) {
+  background-color: rgba(129, 166, 227, 0.1);
+}
+
+.zoom-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.zoom-controls span {
+  font-weight: 500;
+  width: 50px;
+  text-align: center;
+  color: #81a6e3;
+}
+
+.viewer-content {
+  position: relative;
+  margin-top: 80px; /* Add top margin to account for fixed header */
+}
