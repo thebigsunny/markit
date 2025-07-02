@@ -15,13 +15,13 @@ const InteractivePDFViewer = ({ file, scale = 1.0 }) => {
   const [loading, setLoading] = useState(true);
   const [hoveredElement, setHoveredElement] = useState(null);
   const [selectedElements, setSelectedElements] = useState([]);
-  const [isShiftPressed, setIsShiftPressed] = useState(false);
-  const [multiSelectMode, setMultiSelectMode] = useState(false);
-  const [multiSelectedText, setMultiSelectedText] = useState([]);
+  const [chatVisible, setChatVisible] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
   const canvasRefs = useRef({});
   const containerRef = useRef(null);
   const parserRef = useRef(new PDFElementParser());
   const renderingTasks = useRef({}); // Track ongoing render operations
+  const chatMessagesRef = useRef(null);
 
   // Helper functions
   const getElementHoverColor = (type) => {
@@ -139,6 +139,32 @@ const InteractivePDFViewer = ({ file, scale = 1.0 }) => {
     }
   }, [scale, pdf, parsePages]);
 
+  // Auto-scroll to bottom when new messages are added
+  useEffect(() => {
+    if (chatMessagesRef.current && chatMessages.length > 0) {
+      chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
+
+  // Automatically hide chat panel when no messages are left
+  useEffect(() => {
+    if (chatMessages.length === 0 && chatVisible) {
+      setChatVisible(false);
+    }
+  }, [chatMessages, chatVisible]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Cancel all ongoing render operations on cleanup
+      Object.keys(renderingTasks.current).forEach(pageNum => {
+        if (renderingTasks.current[pageNum]) {
+          renderingTasks.current[pageNum].cancel();
+        }
+      });
+    };
+  }, []);
+
   // Render page canvas with proper error handling and cancellation
   const renderPageCanvas = useCallback(async (pageData) => {
     const pageNumber = pageData.pageNumber;
@@ -203,85 +229,6 @@ const InteractivePDFViewer = ({ file, scale = 1.0 }) => {
     }
   }, [pages, renderPageCanvas]);
 
-  // Copy multiple selected text elements
-  const copyMultiSelectedText = useCallback(() => {
-    if (multiSelectedText.length === 0) return;
-    
-    const combinedText = multiSelectedText
-      .sort((a, b) => {
-        // Sort by page number first, then by vertical position (y coordinate)
-        if (a.pageNumber !== b.pageNumber) {
-          return a.pageNumber - b.pageNumber;
-        }
-        return a.y - b.y;
-      })
-      .map(element => element.content)
-      .join('\n');
-    
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(combinedText).then(() => {
-        alert(`Copied ${multiSelectedText.length} text elements:\n\n${combinedText.substring(0, 200)}${combinedText.length > 200 ? '...' : ''}`);
-      }).catch(err => {
-        console.error('Could not copy text: ', err);
-      });
-    }
-    
-    // Clear multi-selection
-    setMultiSelectedText([]);
-  }, [multiSelectedText]);
-
-  // Clear multi-selection
-  const clearMultiSelection = useCallback(() => {
-    setMultiSelectedText([]);
-  }, []);
-
-  // Track Shift key for multi-select mode
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // Only handle Shift key, don't interfere with other keys or scrolling
-      if (e.key === 'Shift' && !e.repeat) {
-        setIsShiftPressed(true);
-        setMultiSelectMode(true);
-        console.log('Multi-select mode enabled');
-      }
-    };
-
-    const handleKeyUp = (e) => {
-      // Only handle Shift key, don't interfere with other keys or scrolling
-      if (e.key === 'Shift') {
-        setIsShiftPressed(false);
-        setMultiSelectMode(false);
-        console.log('Multi-select mode disabled');
-        
-        // Auto-copy selected text when shift is released
-        if (multiSelectedText.length > 0) {
-          copyMultiSelectedText();
-        }
-      }
-    };
-
-    // Use passive listeners to ensure they don't interfere with scrolling
-    window.addEventListener('keydown', handleKeyDown, { passive: true });
-    window.addEventListener('keyup', handleKeyUp, { passive: true });
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown, { passive: true });
-      window.removeEventListener('keyup', handleKeyUp, { passive: true });
-    };
-  }, [multiSelectedText, copyMultiSelectedText]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      // Cancel all ongoing render operations on cleanup
-      Object.keys(renderingTasks.current).forEach(pageNum => {
-        if (renderingTasks.current[pageNum]) {
-          renderingTasks.current[pageNum].cancel();
-        }
-      });
-    };
-  }, []);
-
   // Handle element hover
   const handleElementHover = (element) => {
     setHoveredElement(element);
@@ -291,26 +238,15 @@ const InteractivePDFViewer = ({ file, scale = 1.0 }) => {
   const handleElementClick = (element) => {
     console.log('Element clicked:', element);
     
-    // Handle multi-select mode (Shift + Click)
-    if (isShiftPressed && element.type === 'text') {
-      const isAlreadyInMultiSelect = multiSelectedText.find(el => el.id === element.id);
-      if (isAlreadyInMultiSelect) {
-        // Remove from multi-selection
-        setMultiSelectedText(prev => prev.filter(el => el.id !== element.id));
-        console.log('Element removed from multi-selection:', element);
-      } else {
-        // Add to multi-selection
-        setMultiSelectedText(prev => [...prev, element]);
-        console.log('Element added to multi-selection:', element);
-      }
-      return; // Exit early in multi-select mode
-    }
-    
     // Regular click behavior (toggle selection state)
     const isAlreadySelected = selectedElements.find(el => el.id === element.id);
     if (isAlreadySelected) {
       // Remove from selection (deselect)
       setSelectedElements(prev => prev.filter(el => el.id !== element.id));
+      
+      // Also remove corresponding message from chat panel
+      setChatMessages(prev => prev.filter(msg => msg.elementId !== element.id));
+      
       console.log('Element deselected:', element);
       return; // Exit early to avoid triggering action handlers when deselecting
     } else {
@@ -346,18 +282,18 @@ const InteractivePDFViewer = ({ file, scale = 1.0 }) => {
       });
     }
     
-    // Show different actions based on text type
-    switch (element.subtype) {
-      case 'heading':
-      case 'subheading':
-        alert(`Heading copied: "${element.content}"`);
-        break;
-      case 'list-item':
-        alert(`List item copied: "${element.content}"`);
-        break;
-      default:
-        alert(`Text copied: "${element.content}"`);
-    }
+    // Add text to chat panel instead of showing alerts
+    const newMessage = {
+      id: Date.now(),
+      elementId: element.id, // Store element ID to allow removal on deselect
+      text: element.content,
+      type: element.subtype || 'text',
+      timestamp: new Date(),
+      pageNumber: element.pageNumber
+    };
+    
+    setChatMessages(prev => [...prev, newMessage]);
+    setChatVisible(true);
   };
 
   const handleAnnotationClick = (element) => {
@@ -379,6 +315,10 @@ const InteractivePDFViewer = ({ file, scale = 1.0 }) => {
     alert(fieldInfo);
   };
 
+  const clearChatMessages = () => {
+    setChatMessages([]);
+  };
+
   if (loading) {
     return <div className="pdf-loading">Loading interactive PDF...</div>;
   }
@@ -388,143 +328,168 @@ const InteractivePDFViewer = ({ file, scale = 1.0 }) => {
   }
 
   return (
-    <div className="interactive-pdf-viewer" ref={containerRef}>
-      {/* Control Panel */}
-      {(selectedElements.length > 0 || multiSelectMode) && (
-        <div className="control-panel">
+    <div className={`interactive-pdf-viewer ${chatVisible ? 'chat-active' : ''}`} ref={containerRef}>
+              <div className="pdf-content">
+          {/* Control Panel */}
           {selectedElements.length > 0 && (
-            <div className="selection-info">
-              <span>{selectedElements.length} elements selected</span>
-              <button onClick={() => setSelectedElements([])}>Clear Selection</button>
+            <div className="control-panel">
+              <div className="selection-info">
+                <span>{selectedElements.length} elements selected</span>
+                <button onClick={() => {
+                  setSelectedElements([]);
+                  setChatMessages([]);
+                  setChatVisible(false);
+                }}>Clear Selection</button>
+              </div>
             </div>
           )}
-          
-          {multiSelectMode && (
-            <div className="multi-select-info">
-              <span>🔄 Multi-Select Mode: Hold Shift + Click text to select multiple lines | Scroll freely ↕️</span>
-              {multiSelectedText.length > 0 && (
-                <>
-                  <span>({multiSelectedText.length} text elements selected)</span>
-                  <button onClick={copyMultiSelectedText}>Copy Selected Text</button>
-                  <button onClick={clearMultiSelection}>Clear Multi-Selection</button>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-      )}
 
-      {/* PDF Pages */}
-      {pages.map((pageData) => {
-        const elements = pageData.elements;
-        
-        return (
-          <div 
-            key={pageData.pageNumber} 
-            className="interactive-page-container"
-            style={{ 
-              width: pageData.viewport.width,
-              height: pageData.viewport.height,
-              position: 'relative',
-              marginBottom: '20px'
-            }}
-          >
-            {/* PDF Canvas */}
-            <canvas
-              ref={(el) => {
-                if (el) {
-                  canvasRefs.current[pageData.pageNumber] = el;
-                }
+        {/* PDF Pages */}
+        {pages.map((pageData) => {
+          const elements = pageData.elements;
+          
+          return (
+            <div 
+              key={pageData.pageNumber} 
+              className="interactive-page-container"
+              style={{ 
+                width: pageData.viewport.width,
+                height: pageData.viewport.height,
+                position: 'relative',
+                marginBottom: '20px'
               }}
-              className="pdf-canvas"
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                zIndex: 1,
+            >
+              {/* PDF Canvas */}
+              <canvas
+                ref={(el) => {
+                  if (el) {
+                    canvasRefs.current[pageData.pageNumber] = el;
+                  }
+                }}
+                className="pdf-canvas"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  zIndex: 1,
+                  width: pageData.viewport.width,
+                  height: pageData.viewport.height
+                }}
+              />
+              
+              {/* Interactive Elements Overlay */}
+              <div className="elements-overlay" style={{ 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                zIndex: 2,
                 width: pageData.viewport.width,
                 height: pageData.viewport.height
-              }}
-            />
-            
-            {/* Interactive Elements Overlay */}
-            <div className="elements-overlay" style={{ 
-              position: 'absolute', 
-              top: 0, 
-              left: 0, 
-              zIndex: 2,
-              width: pageData.viewport.width,
-              height: pageData.viewport.height
-            }}>
-              {elements.map((element) => {
-                const isHovered = hoveredElement?.id === element.id;
-                const isSelected = selectedElements.find(el => el.id === element.id);
-                const isMultiSelected = multiSelectedText.find(el => el.id === element.id);
-                
-                return (
-                  <div
-                    key={element.id}
-                    className={`interactive-element ${element.type} ${element.subtype || ''} ${isHovered ? 'hovered' : ''} ${isSelected ? 'selected' : ''} ${isMultiSelected ? 'multi-selected' : ''}`}
-                    style={{
-                      position: 'absolute',
-                      left: Math.max(0, element.x),
-                      top: Math.max(0, element.y),
-                      width: Math.max(1, element.width),
-                      height: Math.max(1, element.height),
-                      cursor: 'pointer',
-                      backgroundColor: isMultiSelected
-                        ? 'rgba(255, 165, 0, 0.3)' // Orange for multi-selected
-                        : isSelected 
-                          ? 'rgba(0, 255, 0, 0.2)' // Green for regular selected
+              }}>
+                {elements.map((element) => {
+                  const isHovered = hoveredElement?.id === element.id;
+                  const isSelected = selectedElements.find(el => el.id === element.id);
+                  
+                  return (
+                    <div
+                      key={element.id}
+                      className={`interactive-element ${element.type} ${element.subtype || ''} ${isHovered ? 'hovered' : ''} ${isSelected ? 'selected' : ''}`}
+                      style={{
+                        position: 'absolute',
+                        left: Math.max(0, element.x),
+                        top: Math.max(0, element.y),
+                        width: Math.max(1, element.width),
+                        height: Math.max(1, element.height),
+                        cursor: 'pointer',
+                        backgroundColor: isSelected
+                          ? 'rgba(0, 255, 0, 0.4)' // Green highlight for selected text
                           : isHovered 
                             ? getElementHoverColor(element.type) // Blue for hovered
                             : 'transparent',
-                      border: isMultiSelected
-                        ? '2px solid #ff8c00' // Orange border for multi-selected
-                        : isSelected 
-                          ? '2px solid #00ff00' // Green border for regular selected
-                          : isHovered 
-                            ? `1px solid ${getElementBorderColor(element.type)}` // Blue border for hovered
-                            : '1px solid transparent',
-                      transition: 'all 0.2s ease',
-                      fontSize: element.fontSize ? `${Math.max(element.fontSize, 8)}px` : 'inherit',
-                      zIndex: isHovered || isSelected || isMultiSelected ? 10 : 3,
-                    }}
-                    onMouseEnter={() => handleElementHover(element)}
-                    onMouseLeave={() => setHoveredElement(null)}
-                    onClick={() => handleElementClick(element)}
-                    title={`${element.type}${element.subtype ? ` (${element.subtype})` : ''}: ${element.content}`}
-                  />
-                );
-              })}
+                        border: 'none', // Remove borders to avoid underline effect
+                        borderRadius: '2px', // Slight rounding for better appearance
+                        transition: 'all 0.2s ease',
+                        fontSize: element.fontSize ? `${Math.max(element.fontSize, 8)}px` : 'inherit',
+                        zIndex: isHovered || isSelected ? 10 : 3,
+                      }}
+                      onMouseEnter={() => handleElementHover(element)}
+                      onMouseLeave={() => setHoveredElement(null)}
+                      onClick={() => handleElementClick(element)}
+                      title={`${element.type}${element.subtype ? ` (${element.subtype})` : ''}: ${element.content}`}
+                    />
+                  );
+                })}
+              </div>
+              
+              {/* Page number indicator */}
+              <div className="page-indicator">
+                Page {pageData.pageNumber} - {elements.length} elements (Scale: {Math.round(scale * 100)}%)
+              </div>
             </div>
-            
-            {/* Page number indicator */}
-            <div className="page-indicator">
-              Page {pageData.pageNumber} - {elements.length} elements (Scale: {Math.round(scale * 100)}%)
+          );
+        })}
+        
+        {/* Enhanced tooltip */}
+        {hoveredElement && (
+          <div className="element-tooltip enhanced">
+            <div className="tooltip-header">
+              <strong>{hoveredElement.type.charAt(0).toUpperCase() + hoveredElement.type.slice(1)}</strong>
+              {hoveredElement.subtype && <span className="subtype">({hoveredElement.subtype})</span>}
+            </div>
+            <div className="tooltip-content">
+              {hoveredElement.content.length > 50 
+                ? hoveredElement.content.substring(0, 50) + '...'
+                : hoveredElement.content
+              }
+            </div>
+            {hoveredElement.metadata && Object.keys(hoveredElement.metadata).length > 0 && (
+              <div className="tooltip-metadata">
+                <small>Click to chat</small>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Chat Panel */}
+      {chatVisible && (
+        <div className="chat-panel">
+          <div className="chat-header">
+            <h3>Selected Text</h3>
+            <div className="chat-controls">
+              <button 
+                className="clear-chat"
+                onClick={clearChatMessages}
+              >
+                Clear
+              </button>
+              <button 
+                className="close-chat"
+                onClick={() => setChatVisible(false)}
+              >
+                ×
+              </button>
             </div>
           </div>
-        );
-      })}
-      
-      {/* Enhanced tooltip */}
-      {hoveredElement && (
-        <div className="element-tooltip enhanced">
-          <div className="tooltip-header">
-            <strong>{hoveredElement.type.charAt(0).toUpperCase() + hoveredElement.type.slice(1)}</strong>
-            {hoveredElement.subtype && <span className="subtype">({hoveredElement.subtype})</span>}
+          <div className="chat-messages" ref={chatMessagesRef}>
+            {chatMessages.length > 0 ? (
+              chatMessages.map((message) => (
+                <div key={message.id} className="chat-message">
+                  <div className="message-content">
+                    <div className="message-text">{message.text}</div>
+                    <div className="message-meta">
+                      <span className="message-type">{message.type}</span>
+                      <span className="message-page">Page {message.pageNumber}</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="empty-chat">
+                <p>Click on text elements in the PDF to see them here!</p>
+              </div>
+            )}
           </div>
-          <div className="tooltip-content">
-            {hoveredElement.content.length > 50 
-              ? hoveredElement.content.substring(0, 50) + '...'
-              : hoveredElement.content
-            }
-          </div>
-          {hoveredElement.metadata && Object.keys(hoveredElement.metadata).length > 0 && (
-            <div className="tooltip-metadata">
-              <small>Click for more details</small>
-            </div>
-          )}
         </div>
       )}
     </div>
