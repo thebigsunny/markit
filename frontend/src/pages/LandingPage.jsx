@@ -1,47 +1,66 @@
-import React from 'react';
-import AuthButton from '../components/AuthButton';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import './LandingPage.css';
 
 const LandingPage = () => {
+  const { user, signIn } = useAuth();
+  const navigate = useNavigate();
+  const [isSigningIn, setIsSigningIn] = useState(false);
+
+  const handleSignIn = async () => {
+    if (user) {
+      // User is already logged in, go to menu
+      navigate('/menu');
+      return;
+    }
+
+    setIsSigningIn(true);
+    try {
+      await signIn('google');
+      navigate('/menu');
+    } catch (error) {
+      console.error('Sign in error:', error);
+    } finally {
+      setIsSigningIn(false);
+    }
+  };
+
+  const handleSignUp = async () => {
+    // For now, use the same Google OAuth for both sign in and sign up
+    // In a real app, you might differentiate these flows
+    await handleSignIn();
+  };
+
   return (
     <div className="landing-page">
-      <header className="hero-section">
-        <div className="hero-content">
-          <h1 className="brand-name">MarkIt</h1>
-          <p className="slogan">Textbooks, but <span className="slogan-highlight">better</span>.</p>
-          <div className="hero-button-container">
-            <AuthButton />
-          </div>
+      <div className="landing-container">
+        {/* Logo */}
+        <div className="logo-section">
+          <img src="/Markit Logo.png" alt="MarkIt Logo" className="main-logo" />
         </div>
-      </header>
-
-      <main className="features-section">
-        <div className="features-container">
-          <div className="feature-card">
-            <div className="feature-icon">🧠</div>
-            <h3 className="feature-title">Interactive AI Learning</h3>
-            <p className="feature-description">
-              Go beyond static pages. Engage with an AI that explains complex concepts, quizzes you on the material, and adapts to your learning style.
-            </p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">🚀</div>
-            <h3 className="feature-title">Instant Feedback</h3>
-            <p className="feature-description">
-              Upload your own textbooks and course materials to get instant, AI-powered feedback and summaries from powerful Large Language Models (LLMs).
-            </p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">📚</div>
-            <h3 className="feature-title">Centralize Your Study</h3>
-            <p className="feature-description">
-              Keep all your notes, highlights, and AI-generated insights in one place, turning your textbook into a personalized and dynamic study hub.
-            </p>
-          </div>
+        
+        {/* Tagline */}
+        <p className="main-tagline">Textbooks but better</p>
+        
+        {/* Auth Buttons */}
+        <div className="main-auth-buttons">
+          <button 
+            className="main-auth-btn signin-btn" 
+            onClick={handleSignIn}
+            disabled={isSigningIn}
+          >
+            {isSigningIn ? 'Connecting...' : (user ? 'Dashboard' : 'sign in')}
+          </button>
+          <button 
+            className="main-auth-btn signup-btn" 
+            onClick={handleSignUp}
+            disabled={isSigningIn}
+          >
+            {user ? 'Dashboard' : 'sign up'}
+          </button>
         </div>
-      </main>
+      </div>
     </div>
   );
 };

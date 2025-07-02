@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom'; // Import Link
+import { Link, useNavigate } from 'react-router-dom'; // Import Link and useNavigate
 import { supabase } from '../lib/supabase'; // Make sure you have this
 import { useAuth } from '../contexts/AuthContext'; // To get the current user
 import TextbookCard from '../components/TextbookCard'; // Import the new component
@@ -27,11 +27,21 @@ const AddCard = ({ onClick, isPrimary, isLoading }) => {
 };
 
 const MenuPage = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [textbooks, setTextbooks] = useState([]);
   const [loading, setLoading] = useState(true); // For fetching initial data
   const [uploading, setUploading] = useState(false); // For upload state
   const fileInputRef = useRef(null);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   // Fetch textbooks from the database
   const fetchTextbooks = async () => {
@@ -126,8 +136,15 @@ const MenuPage = () => {
         accept="application/pdf"
       />
       <div className="menu-header">
-        <h1>Your Library</h1>
-        <p>Select a textbook to start your interactive learning session.</p>
+        <div className="header-content">
+          <div className="header-text">
+            <h1>Your Library</h1>
+            <p>Select a textbook to start your interactive learning session.</p>
+          </div>
+          <button className="sign-out-btn" onClick={handleSignOut}>
+            Sign Out
+          </button>
+        </div>
       </div>
       <div className={`textbook-grid ${!hasTextbooks ? 'empty' : ''}`}>
         {hasTextbooks ? (
