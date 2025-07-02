@@ -105,9 +105,6 @@ const ViewerPage = () => {
       <div className="viewer-content">
         <ErrorBoundary>
           <div className="interactive-mode">
-            <div className="mode-info">
-              <p>🎯 Hover over text and elements to explore, click to interact!</p>
-            </div>
             <InteractivePDFViewer file={pdfFile} scale={scale} />
           </div>
         </ErrorBoundary>

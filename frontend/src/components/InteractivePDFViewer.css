@@ -23,25 +23,7 @@
   max-width: 800px;
 }
 
-.element-filter {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
 
-.element-filter label {
-  font-weight: 500;
-  color: #333;
-}
-
-.element-filter select {
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: white;
-  font-size: 0.9rem;
-  min-width: 200px;
-}
 
 .selection-info {
   display: flex;
@@ -363,15 +345,7 @@
     gap: 1rem;
   }
   
-  .element-filter {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .element-filter select {
-    min-width: auto;
-    width: 100%;
-  }
+
   
   .interactive-page-container {
     margin-bottom: 1rem;
@@ -423,10 +397,7 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Element count indicators */
-.element-filter option {
-  padding: 0.5rem;
-}
+
 
 /* Hover states for different element subtypes */
 .interactive-element.heading:hover {

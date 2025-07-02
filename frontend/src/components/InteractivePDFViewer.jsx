@@ -15,7 +15,6 @@ const InteractivePDFViewer = ({ file, scale = 1.0 }) => {
   const [loading, setLoading] = useState(true);
   const [hoveredElement, setHoveredElement] = useState(null);
   const [selectedElements, setSelectedElements] = useState([]);
-  const [elementFilter, setElementFilter] = useState('all');
   const [isShiftPressed, setIsShiftPressed] = useState(false);
   const [multiSelectMode, setMultiSelectMode] = useState(false);
   const [multiSelectedText, setMultiSelectedText] = useState([]);
@@ -23,9 +22,6 @@ const InteractivePDFViewer = ({ file, scale = 1.0 }) => {
   const containerRef = useRef(null);
   const parserRef = useRef(new PDFElementParser());
   const renderingTasks = useRef({}); // Track ongoing render operations
-
-  // Element type counts for filtering
-  const [elementCounts, setElementCounts] = useState({});
 
   // Helper functions
   const getElementHoverColor = (type) => {
@@ -96,16 +92,6 @@ const InteractivePDFViewer = ({ file, scale = 1.0 }) => {
         const parsedPages = await parsePages(pdfDoc, scale);
         setPages(parsedPages);
         
-        // Calculate element counts
-        const counts = {};
-        parsedPages.forEach(pageData => {
-          pageData.elements.forEach(element => {
-            const key = element.subtype || element.type;
-            counts[key] = (counts[key] || 0) + 1;
-          });
-        });
-        setElementCounts(counts);
-        
       } catch (error) {
         console.error('Error loading PDF:', error);
       } finally {
@@ -135,16 +121,6 @@ const InteractivePDFViewer = ({ file, scale = 1.0 }) => {
         // Re-parse pages with new scale
         const updatedPages = await parsePages(pdf, scale);
         setPages(updatedPages);
-        
-        // Recalculate element counts
-        const counts = {};
-        updatedPages.forEach(pageData => {
-          pageData.elements.forEach(element => {
-            const key = element.subtype || element.type;
-            counts[key] = (counts[key] || 0) + 1;
-          });
-        });
-        setElementCounts(counts);
         
         // Clear selections as positions have changed
         setSelectedElements([]);
@@ -403,19 +379,6 @@ const InteractivePDFViewer = ({ file, scale = 1.0 }) => {
     alert(fieldInfo);
   };
 
-  // Filter elements based on selected filter
-  const getFilteredElements = (elements) => {
-    if (elementFilter === 'all') return elements;
-    return elements.filter(element => 
-      element.type === elementFilter || element.subtype === elementFilter
-    );
-  };
-
-  // Clear selected elements
-  const clearSelection = () => {
-    setSelectedElements([]);
-  };
-
   if (loading) {
     return <div className="pdf-loading">Loading interactive PDF...</div>;
   }
@@ -427,46 +390,33 @@ const InteractivePDFViewer = ({ file, scale = 1.0 }) => {
   return (
     <div className="interactive-pdf-viewer" ref={containerRef}>
       {/* Control Panel */}
-      <div className="control-panel">
-        <div className="element-filter">
-          <label>Filter elements:</label>
-          <select 
-            value={elementFilter} 
-            onChange={(e) => setElementFilter(e.target.value)}
-          >
-            <option value="all">All Elements ({Object.values(elementCounts).reduce((a, b) => a + b, 0)})</option>
-            {Object.entries(elementCounts).map(([type, count]) => (
-              <option key={type} value={type}>
-                {type.charAt(0).toUpperCase() + type.slice(1)} ({count})
-              </option>
-            ))}
-          </select>
+      {(selectedElements.length > 0 || multiSelectMode) && (
+        <div className="control-panel">
+          {selectedElements.length > 0 && (
+            <div className="selection-info">
+              <span>{selectedElements.length} elements selected</span>
+              <button onClick={() => setSelectedElements([])}>Clear Selection</button>
+            </div>
+          )}
+          
+          {multiSelectMode && (
+            <div className="multi-select-info">
+              <span>🔄 Multi-Select Mode: Hold Shift + Click text to select multiple lines | Scroll freely ↕️</span>
+              {multiSelectedText.length > 0 && (
+                <>
+                  <span>({multiSelectedText.length} text elements selected)</span>
+                  <button onClick={copyMultiSelectedText}>Copy Selected Text</button>
+                  <button onClick={clearMultiSelection}>Clear Multi-Selection</button>
+                </>
+              )}
+            </div>
+          )}
         </div>
-        
-        {selectedElements.length > 0 && (
-          <div className="selection-info">
-            <span>{selectedElements.length} elements selected</span>
-            <button onClick={clearSelection}>Clear Selection</button>
-          </div>
-        )}
-        
-        {multiSelectMode && (
-          <div className="multi-select-info">
-            <span>🔄 Multi-Select Mode: Hold Shift + Click text to select multiple lines | Scroll freely ↕️</span>
-            {multiSelectedText.length > 0 && (
-              <>
-                <span>({multiSelectedText.length} text elements selected)</span>
-                <button onClick={copyMultiSelectedText}>Copy Selected Text</button>
-                <button onClick={clearMultiSelection}>Clear Multi-Selection</button>
-              </>
-            )}
-          </div>
-        )}
-      </div>
+      )}
 
       {/* PDF Pages */}
       {pages.map((pageData) => {
-        const filteredElements = getFilteredElements(pageData.elements);
+        const elements = pageData.elements;
         
         return (
           <div 
@@ -506,7 +456,7 @@ const InteractivePDFViewer = ({ file, scale = 1.0 }) => {
               width: pageData.viewport.width,
               height: pageData.viewport.height
             }}>
-              {filteredElements.map((element) => {
+              {elements.map((element) => {
                 const isHovered = hoveredElement?.id === element.id;
                 const isSelected = selectedElements.find(el => el.id === element.id);
                 const isMultiSelected = multiSelectedText.find(el => el.id === element.id);
@@ -551,7 +501,7 @@ const InteractivePDFViewer = ({ file, scale = 1.0 }) => {
             
             {/* Page number indicator */}
             <div className="page-indicator">
-              Page {pageData.pageNumber} - {filteredElements.length} elements (Scale: {Math.round(scale * 100)}%)
+              Page {pageData.pageNumber} - {elements.length} elements (Scale: {Math.round(scale * 100)}%)
             </div>
           </div>
         );
