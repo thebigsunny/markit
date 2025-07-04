@@ -1,135 +1,248 @@
-/* General Landing Page Styles */
-.landing-page {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  color: #333;
-  background-color: #f8f9fa;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-}
-
-.landing-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 600px;
-  width: 100%;
-}
-
-/* Logo Section */
-.logo-section {
-  margin-bottom: 2rem;
-}
-
-.main-logo {
-  width: 200px;
-  height: 200px;
-  object-fit: contain;
-  background-color: #f8f9fa;
-  padding: 10px;
-  border-radius: 20px;
-}
-
-/* Main Tagline */
-.main-tagline {
-  font-size: 1.35rem;
-  color: #666;
-  margin: 0 0 2.25rem 0;
-  font-weight: 400;
-}
-
-/* Auth Buttons */
-.main-auth-buttons {
-  display: flex;
-  gap: 1.875rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.main-auth-btn {
-  padding: 14px 30px;
-  border: 2px solid #333;
-  border-radius: 25px;
-  background-color: transparent;
-  color: #333;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 110px;
-}
-
-.main-auth-btn:hover {
-  background-color: #333;
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.main-auth-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.main-auth-btn:disabled:hover {
-  background-color: transparent;
-  color: #333;
-  transform: none;
-  box-shadow: none;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .landing-page {
-    padding: 1.5rem;
+/* ----------------------------------------
+   General Landing Page Styles
+   ---------------------------------------- */
+   .landing-page {
+    font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+    color: #333;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 1rem 2rem 2rem;
   }
   
-  .main-logo {
-    width: 160px;
-    height: 160px;
-  }
-  
-  .main-tagline {
-    font-size: 1.1rem;
-  }
-  
-  .main-auth-buttons {
-    gap: 1.2rem;
-  }
-  
-  .main-auth-btn {
-    padding: 12px 24px;
-    font-size: 0.85rem;
-    min-width: 90px;
-  }
-}
-
-@media (max-width: 480px) {
-  .main-logo {
-    width: 140px;
-    height: 140px;
-  }
-  
-  .main-tagline {
-    font-size: 1rem;
-    margin-bottom: 1.875rem;
-  }
-  
-  .main-auth-buttons {
+  .landing-container {
+    display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.75rem;
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+  }
+  
+  /* ----------------------------------------
+     Logo Section
+     ---------------------------------------- */
+  .logo-section {
+    margin-bottom: 1rem;
+  }
+  
+  .main-logo {
+    width: 280px;
+    height: 280px;
+    object-fit: contain;
+  }
+  
+  /* ----------------------------------------
+     Main Title & Tagline
+     ---------------------------------------- */
+  .main-title {
+    font-size: 4.8rem;
+    font-weight: 700;
+    margin: -110px 0 0.5rem 0;
+    color: #333;
+    letter-spacing: -2px;
+  }
+  
+  .main-tagline {
+    font-size: 1.8rem;
+    color: #666;
+    margin: 0 0 3rem 0;
+    font-weight: 400;
+  }
+  
+  .glow-green {
+    color: #66BB6A;
+    text-shadow: 0 0 6px #66BB6A;
+    font-weight: 600;
+  }
+  
+  /* ----------------------------------------
+     Textbook Page Element (all breakpoints)
+     ---------------------------------------- */
+  .textbook-page {
+    display: flex;
+    width: 100%;
+    max-width: 2000px;
+    margin: 4rem auto 0;
+    background-color: white;
+    border-radius: 24px;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    min-height: 650px;
+    aspect-ratio: 16/9;
+  }
+  
+  .textbook-left-page,
+  .textbook-right-page {
+    flex: 1;
+    padding: 3rem 2rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .textbook-left-page {
+    border-right: 2px solid #e5e5e5;
+  }
+  
+  /* ----------------------------------------
+     Auth Buttons
+     ---------------------------------------- */
+  .main-auth-buttons {
+    display: flex;
+    gap: 3rem;
+    justify-content: center;
+    flex-wrap: wrap;
   }
   
   .main-auth-btn {
-    width: 100%;
-    max-width: 150px;
-    padding: 10px 20px;
-    font-size: 0.8rem;
+    padding: 18px 40px;
+    border: 3px solid #333;
+    border-radius: 30px;
+    background-color: transparent;
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 140px;
   }
-} 
+  
+  .main-auth-btn:hover {
+    background-color: #333;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  .main-auth-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .main-auth-btn:disabled:hover {
+    background-color: transparent;
+    color: #333;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  /* ----------------------------------------
+     Responsive Design
+     ---------------------------------------- */
+  /* Tablet & small desktop */
+  @media (max-width: 768px) {
+    .landing-page {
+      padding: 1.5rem;
+    }
+  
+    .main-logo {
+      width: 220px;
+      height: 220px;
+    }
+  
+    .main-title {
+      font-size: 3.6rem;
+      margin: -70px 0 0.5rem 0;
+    }
+  
+    .main-tagline {
+      font-size: 1.4rem;
+    }
+  
+    .main-auth-buttons {
+      gap: 2rem;
+    }
+  
+    .main-auth-btn {
+      padding: 16px 32px;
+      font-size: 1.05rem;
+      min-width: 120px;
+    }
+  
+    .textbook-page {
+      flex-direction: column;
+      max-width: 1600px;
+      margin: 3rem auto 0;
+      min-height: 550px;
+      aspect-ratio: 4/3;
+    }
+  
+    .textbook-left-page,
+    .textbook-right-page {
+      padding: 2.5rem 1.5rem;
+    }
+  }
+  
+  /* Mobile */
+  @media (max-width: 480px) {
+    .main-logo {
+      width: 180px;
+      height: 180px;
+    }
+  
+    .main-title {
+      font-size: 3rem;
+      letter-spacing: -1px;
+      margin: -60px 0 0.5rem 0;
+    }
+  
+    .main-tagline {
+      font-size: 1.3rem;
+      margin-bottom: 2.5rem;
+    }
+  
+    .main-auth-buttons {
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+  
+    .main-auth-btn {
+      width: 100%;
+      max-width: 180px;
+      padding: 14px 28px;
+      font-size: 1rem;
+    }
+  
+    .textbook-page {
+      flex-direction: column;
+      max-width: 900px;
+      margin: 2rem auto 0;
+      min-height: 725px;
+      aspect-ratio: 4/3;
+    }
+  
+    .textbook-left-page {
+      border-right: none;
+      border-bottom: 2px solid #e5e5e5;
+    }
+  
+    .textbook-left-page,
+    .textbook-right-page {
+      padding: 2rem 1rem;
+    }
+  }
+  
+  /* ----------------------------------------
+     FULL-WIDTH “Book” Card on Desktop
+     ---------------------------------------- */
+  @media (min-width: 769px) {
+    .textbook-page {
+      /* detach from the 600px wrapper and center in the viewport */
+      position: relative;
+      left: 50%;
+      transform: translateX(calc(-50vw + 2rem));
+  
+      /* span entire browser width minus the 2rem gutters each side */
+      width: calc(100vw - 4rem);
+      max-width: 2000px;
+  
+      /* preserve only the top margin */
+      margin: 4rem auto 0;
+    }
+  }

@@ -37,11 +37,14 @@ const LandingPage = () => {
       <div className="landing-container">
         {/* Logo */}
         <div className="logo-section">
-          <img src="/Markit Logo.png" alt="MarkIt Logo" className="main-logo" />
+          <img src="/markitlogonotextpng.png" alt="MarkIt Logo" className="main-logo" />
         </div>
         
+        {/* Brand Name */}
+        <h1 className="main-title">MarkIt</h1>
+        
         {/* Tagline */}
-        <p className="main-tagline">Textbooks but better</p>
+        <p className="main-tagline">Textbooks but <span className="glow-green">better</span></p>
         
         {/* Auth Buttons */}
         <div className="main-auth-buttons">
@@ -59,6 +62,14 @@ const LandingPage = () => {
           >
             {user ? 'Dashboard' : 'sign up'}
           </button>
+        </div>
+        
+        {/* Textbook Page Element */}
+        <div className="textbook-page">
+          <div className="textbook-left-page">
+          </div>
+          <div className="textbook-right-page">
+          </div>
         </div>
       </div>
     </div>
